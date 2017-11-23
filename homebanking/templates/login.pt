@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+ <head>
+  <title>HomeBanking - Login</title>
+  <style>
+body {
+    background-color: #DDDDDD;
+}
+ 
+form.login {
+    background-color: #EEEEEE;
+    border: solid 1px #FFFFFF;
+    border-radius: 8px 8px;
+    padding: 4em;;
+    margin: 100px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 26em;
+    text-align:right;
+}
+  </style>
+ </head>
+<body>
+ <form class='login' method='POST' action='${url}'>
+  <p>${message}</p>
+  <label>User:</label> <input type='text' name='login' value='${login}'> <br/>
+  <label>Password:</label> <input type='password' name='password'> <br/>
+<input type='submit' value='envoyer' name='form.submitted'>
+ </form>
+</body>
+</html>
