@@ -50,20 +50,57 @@ def main(argv=sys.argv):
     with transaction.manager:
         dbsession = get_tm_session(session_factory, transaction.manager)
 
+        #Account types
         account_type = AccountType(
             id=1, 
-            label='Credit card',
+            label='Cash account',
+            )
+        dbsession.add(account_type)
+        
+        account_type = AccountType(
+            id=2, 
+            label='Savings account',
+            )
+        dbsession.add(account_type)
+        
+        account_type = AccountType(
+            id=3, 
+            label='Term deposit',
+            )
+        dbsession.add(account_type)
+        
+        account_type = AccountType(
+            id=4, 
+            label='Pension savings account',
             )
         dbsession.add(account_type)
 
+        #Accounts
         account = Account(
             id=1, 
             number='BE02001779420540', 
             balance=1250.51, 
+            account_type_id=2,
+            )
+        dbsession.add(account)
+        
+        account = Account(
+            id=2, 
+            number='BE68539007547034', 
+            balance=-123.1, 
+            account_type_id=1,
+            )
+        dbsession.add(account)
+        
+        account = Account(
+            id=3, 
+            number='BE39103123456789', 
+            balance=1375.01, 
             account_type_id=1,
             )
         dbsession.add(account)
 
+        #Clients
         client = Client(
             id=1, 
             login='gilles1234', 
@@ -71,12 +108,46 @@ def main(argv=sys.argv):
             name='Igot', 
             first_name='Gilles', 
             address='rue Georges Pochet, 4 - 5170 Lesve', 
-            birth_date='19880518'
+            birth_date='19880518',
+            lat=50.3745,
+            lng=4.7804,
+            )
+        dbsession.add(client)
+        
+        client = Client(
+            id=2, 
+            login='charlie', 
+            password=sha256('charlie:test'.encode("utf-8")).hexdigest(), 
+            name='Durand', 
+            first_name='Charlie', 
+            address='rue de Fer, 3 - 5000 Namur', 
+            birth_date='19770102',
+            lat=50.465,
+            lng=4.86503,
             )
         dbsession.add(client)
 
+        #Account - client links
         client_account = AccountClient(
             client_id=1, 
             account_id=1
+            )
+        dbsession.add(client_account)
+        
+        client_account = AccountClient(
+            client_id=1, 
+            account_id=2
+            )
+        dbsession.add(client_account)
+        
+        client_account = AccountClient(
+            client_id=2, 
+            account_id=2
+            )
+        dbsession.add(client_account)
+        
+        client_account = AccountClient(
+            client_id=2, 
+            account_id=3
             )
         dbsession.add(client_account)

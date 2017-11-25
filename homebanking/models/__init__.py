@@ -49,8 +49,7 @@ def get_tm_session(session_factory, transaction_manager):
 
     """
     dbsession = session_factory()
-    zope.sqlalchemy.register(
-        dbsession, transaction_manager=transaction_manager)
+    zope.sqlalchemy.register(dbsession, transaction_manager=transaction_manager)
     return dbsession
 
 

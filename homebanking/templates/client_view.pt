@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Home Banking</title>
+    <style>
+        body {
+            background-color: #DDDDDD;
+            font-family: Verdana;
+        }
+        
+        table {
+            border: solid 1px #FFFFFF;
+            background-color: #EEEEEE;
+            border-radius: 8px 8px;
+            padding: 2em;
+        }
+        
+        td { padding: 0.5em; }
+        
+        .button {
+            width: 115px;
+            height: 25px;
+            background: #BBBBBB;
+            padding: 10px;
+            text-align: center;
+            border-radius: 5px;
+            color: white;
+            font-weight: bold;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <h2 align='center'>Welcome to HomeBanking</h2>
+    <table align='center'>
+        <tr>
+            <td>Name: </td>
+            <td>${c.name}</td>
+        </tr>
+        <tr>
+            <td>First name: </td>
+            <td>${c.first_name}</td>
+        </tr>
+        <tr>
+            <td>Login: </td>
+            <td>${c.login}</td>
+        </tr>
+        <tr>
+            <td>Password: </td>
+            <td>******</td>
+        </tr>
+        <tr>
+            <td>Birth date: </td>
+            <td>${c.birth_date.strftime('%d %B %Y')}</td>
+        </tr>
+        <tr>
+            <td>Address: </td>
+            <td>${c.address}</td>
+        </tr>
+        <tr>
+            <td>Coordinates: </td>
+            <td>${coordinates}</td>
+        </tr>
+    </table>
+    <br />
+    <div name='links' align='center'>
+        <p>
+            <a href='${update_link}' class='button'>Update client info</a>
+            <a href='${delete_link}' class='button'>Delete client</a>
+            <a href='${accounts_link}' class='button'>My accounts</a>
+        </p>
+        <br />
+        <p>
+            <a href='${logout_link}' class='button'>Logout</a>
+        </p>
+    </div>
+</body>
+</html>

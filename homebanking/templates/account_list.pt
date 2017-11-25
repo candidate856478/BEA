@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=latin-1"/>
+    <title>Home Banking</title>
+    <style>
+        body {
+            background-color: #DDDDDD;
+            font-family: Verdana;
+        }
+
+        table {
+            border: solid 1px #FFFFFF;
+            background-color: #EEEEEE;
+            border-radius: 8px 8px;
+            padding: 2em;
+        }
+
+        td { padding: 1em; }
+
+        .button {
+            width: 115px;
+            height: 25px;
+            background: #BBBBBB;
+            padding: 10px;
+            text-align: center;
+            border-radius: 5px;
+            color: white;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        input[type="submit"]{
+            cursor:pointer;
+            border: none;
+            padding: 10px 10px 30px;
+            width: 160px;
+            text-align: center;
+            vertical-align: middle;
+            font-size: medium;
+            font-family: Verdana;
+        }
+
+        select {
+            background-color: #EEEEEE;
+            font-size: medium;
+            border-radius: 5px;
+            height: 25px;
+        }
+    </style>
+</head>
+<body>
+    <h2 align='center'>My accounts</h2>
+    <table align='center'>
+        <tr>
+            <td><b>Account number</b></td>
+            <td><b>Balance</b></td>
+            <td><b>Account type</b></td>
+        </tr>
+        <tr tal:repeat="a accounts">
+            <td tal:content="string:${a[0].number[:4]} ${a[0].number[4:8]} ${a[0].number[8:12]} ${a[0].number[12:]}"/>
+            <td align="right" tal:content="string:${a[0].balance}&euro;"/>
+            <td tal:content="a[1].label"/>
+            <td><a tal:attributes='href string:${upd_account}${a[0].id}' class='button'>Modify</a></td>
+            <td><a tal:attributes='href string:${del_account}${a[0].id}' class='button'>Delete</a></td>
+        </tr>
+    </table>
+    <br />
+    <div name='links' align='center'>
+        <p>
+            <form method='POST' action='${add_account}'>
+                <input id='submit' type='submit' class='button' value='Create account' name='form.submitted'>
+                <select name='account_type'>
+                    <tal:block tal:repeat="type types">
+                        <option tal:content='type.label' tal:attributes='value type.id' />
+                    </tal:block>
+                </select>
+            </form>
+        </p>
+        <br />
+        <p>
+            <a href='${back}' class='button'>Back</a>
+        </p>
+    </div>
+</body>
+</html>

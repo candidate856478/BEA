@@ -1,38 +1,37 @@
-from sqlalchemy.sql import text
+import transaction
 from hashlib import sha256
- 
+from sqlalchemy.exc import DBAPIError
+
 from .models import (
-    DBSession,
+    Client
     )
  
-# Check if the given login/password (hashed) pair exists in the DB
-user_query = text("SELECT COUNT(*) FROM CLIENT "
-                  "WHERE LOGIN=:login "
-                  "AND PASSWORD=:passwd")
- 
-# In this sample system, all users will have
-# the same group membership.
-# We only have to check for user existance.
-group_query = text("SELECT COUNT(*) FROM CLIENT "
-                  "WHERE LOGIN=:login")
- 
-def is_valid_user(username, password):
+def is_valid_user(username, password, request):
     """Check if the given user/password is a valid
     user for the system.
     """
     salted_password = username + ":" + password
-    print(salted_password)
-    passwd = sha256(salted_password.encode("utf-8")).hexdigest()
-    return DBSession.execute(user_query, dict(login=username, passwd=passwd)).scalar() == 1
+    pwd = sha256(salted_password.encode("utf-8")).hexdigest()
+    
+    try:
+        return request.dbsession.query(Client.id).\
+                    filter(Client.login == username, Client.password == pwd).scalar()
+    except DBAPIError:
+        return Response("Error executing login request", content_type='text/plain', status=500)
  
 def groupfinder(username, request):
     """Authentication policy callback.
  
     *    If the userid exists in the system, it will return a sequence of group identifiers (or an empty sequence if the user isn't a member of any groups).
     *    If the userid does not exist in the system, it will return None.
+    
+    All users will have the same group membership, just cheking for user existence
  
     """
-    print('user_group:',username,request)
-    existing_user = DBSession.execute(group_query, dict(login=username)).scalar()
+    try:
+        existing_user = request.dbsession.query(Client.id).\
+                    filter(Client.login == username).scalar()
+    except DBAPIError:
+        return Response("Error executing group finder request", content_type='text/plain', status=500)
     
     return ['editor'] if existing_user else None

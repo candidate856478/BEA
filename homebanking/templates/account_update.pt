@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Home Banking</title>
+    <style>
+        body {
+            background-color: #DDDDDD;
+            font-family:Verdana;
+        }
+
+        .button {
+            width: 115px;
+            height: 25px;
+            background: #BBBBBB;
+            padding: 10px;
+            text-align: center;
+            border-radius: 5px;
+            color: white;
+            font-weight: bold;
+            text-decoration: none;
+        }
+ 
+        form.update {
+            background-color: #EEEEEE;
+            border: solid 1px #FFFFFF;
+            border-radius: 8px 8px;
+            padding: 3em;
+            margin: 50px;
+            margin-left: auto;
+            margin-right: auto;
+            width: 26em;
+            text-align:center;
+        }
+
+        input[type="submit"]{
+            cursor:pointer;
+            border: none;
+            padding: 10px 10px 30px;
+            width: 160px;
+            text-align: center;
+            vertical-align: middle;
+            font-size: medium;
+            font-family: Verdana;
+        }
+
+        .error {
+            color : red;
+        }
+    </style>
+</head>
+<body>
+    <h2 align="center">Home Banking</h2>
+    <form class='update' method='POST' action='${url}'>
+        <h3>${title}</h3><br />
+        <p>Money transfer for account ${accountNumber}</p>
+        <label>Enter the desired value for money transfer :</label> 
+        <p class="error">${error_msg}</p>
+        <input type='text' name='money_transfer'> <br/>
+        <p style='font-size:small'>The value should be preceded by - in case of withdrawal.</p>
+        <br/>
+        <input type='submit' value='Execute' class='button' name='form.submitted'>
+    </form>
+    <p align='center'>
+        <a href='${back}' class='button'>Back</a>
+    </p>
+</body>
+</html>
