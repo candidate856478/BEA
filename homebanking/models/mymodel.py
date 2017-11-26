@@ -43,6 +43,8 @@ class Client(Base):
     lng = Column(Float)
 
 class AccountClient(Base):
+    """ Represent the link between accounts and clients
+    """
     __tablename__ = 'account_client'
     client_id = Column(
         Integer, 
@@ -59,6 +61,11 @@ class AccountClient(Base):
 
 def clientValidation(client):
     """ Client attributes validation
+    
+        Check if all attributes filled in
+        Check birth date formatting
+        
+        Returns the appropriate error message
     """
     msg = ''
 

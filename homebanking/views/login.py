@@ -8,6 +8,8 @@ from ..security import is_valid_user
 
 @view_config(route_name='login', renderer='../templates/login.pt')
 def login_view(request):
+    """ Log in and redirect to client details
+    """
     url = request.route_url('login')
     url_register = request.route_url('client_action', action='add', id='NEW')
     login = ''
@@ -31,6 +33,8 @@ def login_view(request):
 
 @view_config(route_name='logout', renderer='../templates/login.pt')
 def logout_view(request):
+    """ Log out and redirect to home
+    """
     headers = forget(request)
     url = request.route_url('login')
     return HTTPFound(location=url, headers=headers)

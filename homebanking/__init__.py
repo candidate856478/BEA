@@ -11,6 +11,7 @@ def main(global_config, **settings):
     """ This function returns a Pyramid WSGI application.
     """
 
+    #Setting authorization and authentication policies
     authn_policy = AuthTktAuthenticationPolicy(
             settings['homebanking.secret'],
             callback=groupfinder,

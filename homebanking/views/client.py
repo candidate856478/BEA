@@ -24,6 +24,8 @@ from ..common import deleteAccount
     permission='edit',
     )
 def client_view(request):
+    """ Display client details
+    """
     clientId = request.matchdict["id"]
     if not resourceAccessAllowed(clientId, request):
         return Response("Error: Access not allowed on this resource.", content_type='text/plain', status=403)
@@ -35,6 +37,7 @@ def client_view(request):
     try:
         client = request.dbsession.query(Client).filter(Client.id == clientId).first()
         
+        #Store data to pre fill update form
         request.session['client_login'] = client.login
         request.session['client_name'] = client.name
         request.session['client_first_name'] = client.first_name
@@ -63,6 +66,8 @@ def client_view(request):
     renderer='../templates/client_modification.pt',
     )
 def client_add(request):
+    """ Handle new client registration
+    """
     url = request.route_url('client_action', action='add', id='NEW')
     url_login = request.route_url('login')
     title = 'Registration'
@@ -93,7 +98,7 @@ def client_add(request):
             ))
 
         if not error_msg:
-
+            #Crypting password before saving it
             password=sha256((login + ':' + password).encode("utf-8")).hexdigest(), 
         
             #call Google Geocoding to fill lat & lng
@@ -104,6 +109,7 @@ def client_add(request):
             root = ET.fromstring(geocodingInfo.decode("utf-8"))
             status = root.find("./status").text
 
+            #if API request successful
             if status == 'OK':
                 lat = float(root.find("./result/geometry/location/lat").text)
                 lng = float(root.find("./result/geometry/location/lng").text)
@@ -147,11 +153,14 @@ def client_add(request):
     permission='edit',
     )
 def client_update(request):
+    """ Handle client details update
+    """
     clientId = request.matchdict["id"]
     if not resourceAccessAllowed(clientId, request):
         return Response("Error: Access not allowed on this resource.", content_type='text/plain', status=403)
     title = 'Client update'
     
+    #pre fill form with session data
     login = request.session['client_login']
     password = ''
     name = request.session['client_name']
@@ -191,13 +200,15 @@ def client_update(request):
             root = ET.fromstring(geocodingInfo.decode("utf-8"))
             status = root.find("./status").text
 
+            #if API request successful
             if status == 'OK':
                 lat = float(root.find("./result/geometry/location/lat").text)
                 lng = float(root.find("./result/geometry/location/lng").text)
             else:
                 lat = ''
                 lng = ''
-                
+            
+            #Crypting password before saving it
             password=sha256((login + ':' + password).encode("utf-8")).hexdigest(), 
   
             try:
@@ -235,6 +246,8 @@ def client_update(request):
     permission='edit',
     )
 def client_delete(request):
+    """ Delete a client and linked accounts
+    """
     clientId = request.matchdict["id"]
     if not resourceAccessAllowed(clientId, request):
         return Response("Error: Access not allowed on this resource.", content_type='text/plain', status=403)
@@ -244,10 +257,12 @@ def client_delete(request):
             join(AccountType, Account.account_type_id == AccountType.id).\
             filter(AccountClient.client_id == clientId)
         for account in accounts:
+            #delete account-client link, the account is deleted if last client using it
             deleteAccount(request.dbsession, clientId, account.id)
 
         request.dbsession.query(Client).filter(Client.id == clientId).delete(synchronize_session=False)
 
+        #Log out and redirect to home
         headers = forget(request)
         url = request.route_url('login')
         return HTTPFound(location=url, headers=headers)

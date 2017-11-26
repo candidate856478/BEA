@@ -18,6 +18,8 @@ from ..common import deleteAccount
     permission='edit',
     )
 def account_list(request):
+    """ List all accounts for a given client
+    """
     clientId = request.matchdict["clientId"]
     if not resourceAccessAllowed(clientId, request):
         return Response("Error: Access not allowed on this resource.", content_type='text/plain', status=403)
@@ -53,6 +55,8 @@ def account_list(request):
     permission='edit',
     )
 def account_add(request):
+    """ Handle account creation
+    """
     clientId = request.matchdict["clientId"]
     if not resourceAccessAllowed(clientId, request):
         return Response("Error: Access not allowed on this resource.", content_type='text/plain', status=403)
@@ -70,12 +74,14 @@ def account_add(request):
                 iban = '0' + iban
             iban = 'BE54' + iban
             
+            #DB account creation
             account = Account(number=iban, balance=0.0, account_type_id=type)
             request.dbsession.add(account)
             #flush and refresh session to get generated id
             request.dbsession.flush()
             request.dbsession.refresh(account)
 
+            #DB account-client link creation
             accountClient = AccountClient(client_id=clientId, account_id=account.id)
             request.dbsession.add(accountClient)
         except DBAPIError:
@@ -90,6 +96,10 @@ def account_add(request):
     permission='edit',
     )
 def account_delete(request):
+    """ Suppression of the account link for current client
+    
+        Account will also be deleted if no other client linked to it
+    """
     clientId = request.matchdict["clientId"]
     if not resourceAccessAllowed(clientId, request):
         return Response("Error: Access not allowed on this resource.", content_type='text/plain', status=403)
@@ -107,6 +117,8 @@ def account_delete(request):
     permission='edit',
     )
 def account_update(request):
+    """ Handle money deposit/withdrawal for a given account
+    """
     clientId = request.matchdict["clientId"]
     if not resourceAccessAllowed(clientId, request):
         return Response("Error: Access not allowed on this resource.", content_type='text/plain', status=403)
@@ -122,7 +134,7 @@ def account_update(request):
         return Response("Error retrieving account", content_type='text/plain', status=500)
 
     if 'form.submitted' in request.params:
-        #TODO validation
+        #add/remove money from account balance
         money_transfer = request.params['money_transfer']
         total = float(account.balance) + float(money_transfer)
 
