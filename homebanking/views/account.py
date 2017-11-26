@@ -4,6 +4,7 @@ from pyramid.response import Response
 from pyramid.httpexceptions import HTTPFound
 from sqlalchemy.exc import DBAPIError
 from random import randrange
+from ..security import resourceAccessAllowed
 from ..models import (
     Account,
     AccountClient,
@@ -18,6 +19,8 @@ from ..common import deleteAccount
     )
 def account_list(request):
     clientId = request.matchdict["clientId"]
+    if not resourceAccessAllowed(clientId, request):
+        return Response("Error: Access not allowed on this resource.", content_type='text/plain', status=403)
     url_client_view = request.route_url('client_action', action='view', id=clientId)
     url_account_add = request.route_url('account_action', clientId=clientId, action='add', id='NEW')
     url_account_del = request.route_url('account_action', clientId=clientId, action='delete', id='')
@@ -51,6 +54,8 @@ def account_list(request):
     )
 def account_add(request):
     clientId = request.matchdict["clientId"]
+    if not resourceAccessAllowed(clientId, request):
+        return Response("Error: Access not allowed on this resource.", content_type='text/plain', status=403)
     accounts_url = request.route_url('account_list', clientId=clientId)
 
     if 'form.submitted' in request.params:
@@ -86,6 +91,8 @@ def account_add(request):
     )
 def account_delete(request):
     clientId = request.matchdict["clientId"]
+    if not resourceAccessAllowed(clientId, request):
+        return Response("Error: Access not allowed on this resource.", content_type='text/plain', status=403)
     accountId = request.matchdict["id"]
     accounts_url = request.route_url('account_list', clientId=clientId)
 
@@ -101,6 +108,8 @@ def account_delete(request):
     )
 def account_update(request):
     clientId = request.matchdict["clientId"]
+    if not resourceAccessAllowed(clientId, request):
+        return Response("Error: Access not allowed on this resource.", content_type='text/plain', status=403)
     accountId = request.matchdict["id"]
     accounts_url = request.route_url('account_list', clientId=clientId)
     url_account_upd = request.route_url('account_action', clientId=clientId, action='update', id=accountId)

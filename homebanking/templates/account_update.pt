@@ -55,7 +55,7 @@
         <p>Money transfer for account ${accountNumber}</p>
         <label>Enter the desired value for money transfer :</label> 
         <p class="error">${error_msg}</p>
-        <input type='text' name='money_transfer'> <br/>
+        <input type='number' step="0.01" name='money_transfer'> <br/>
         <p style='font-size:small'>The value should be preceded by - in case of withdrawal.</p>
         <br/>
         <input type='submit' value='Execute' class='button' name='form.submitted'>

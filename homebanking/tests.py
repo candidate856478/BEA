@@ -1,65 +1,96 @@
 import unittest
 import transaction
-
 from pyramid import testing
+from .models import (
+    Client,
+    clientValidation,
+    )
 
-
-def dummy_request(dbsession):
-    return testing.DummyRequest(dbsession=dbsession)
-
-
-class BaseTest(unittest.TestCase):
-    def setUp(self):
-        self.config = testing.setUp(settings={
-            'sqlalchemy.url': 'sqlite:///:memory:'
-        })
-        self.config.include('.models')
-        settings = self.config.get_settings()
-
-        from .models import (
-            get_engine,
-            get_session_factory,
-            get_tm_session,
+class TestClientValidation(unittest.TestCase):
+    def test_client_validation(self):
+    
+        test_cases = (
+            (Client(
+                login='',
+                password='',
+                name='',
+                first_name='',
+                birth_date='',
+                address='',
+                ), 'Login is mandatory.'),
+            (Client(
+                login='jdupont',
+                password='',
+                name='',
+                first_name='',
+                birth_date='',
+                address='',
+                ), 'Password is mandatory.'),
+            (Client(
+                login='jdupont',
+                password='password',
+                name='',
+                first_name='',
+                birth_date='',
+                address='',
+                ), 'Name is mandatory.'),
+            (Client(
+                login='jdupont',
+                password='password',
+                name='Dupont',
+                first_name='',
+                birth_date='',
+                address='',
+                ), 'First name is mandatory.'),
+            (Client(
+                login='jdupont',
+                password='password',
+                name='Dupont',
+                first_name='Jacques',
+                birth_date='',
+                address='',
+                ), 'Birth date is mandatory.'),
+            (Client(
+                login='jdupont',
+                password='password',
+                name='Dupont',
+                first_name='Jacques',
+                birth_date='1970-01-01',
+                address='',
+                ), 'Address is mandatory.'),
+            (Client(
+                login='jdupont',
+                password='password',
+                name='Dupont',
+                first_name='Jacques',
+                birth_date='1970-01-01',
+                address='rue de Bruxelles, 20 - 5000 Namur',
+                ), ''),
+            (Client(
+                login='jdupont',
+                password='password',
+                name='Dupont',
+                first_name='Jacques',
+                birth_date='azerty',
+                address='rue de Bruxelles, 20 - 5000 Namur',
+                ), 'Wrong date format.'),
+            (Client(
+                login='jdupont',
+                password='password',
+                name='Dupont',
+                first_name='Jacques',
+                birth_date='1970/01/01',
+                address='rue de Bruxelles, 20 - 5000 Namur',
+                ), 'Wrong date format.'),
+            (Client(
+                login='jdupont',
+                password='password',
+                name='Dupont',
+                first_name='Jacques',
+                birth_date='1970-01-32',
+                address='rue de Bruxelles, 20 - 5000 Namur',
+                ), 'Wrong date format.'),
             )
-
-        self.engine = get_engine(settings)
-        session_factory = get_session_factory(self.engine)
-
-        self.session = get_tm_session(session_factory, transaction.manager)
-
-    def init_database(self):
-        from .models.meta import Base
-        Base.metadata.create_all(self.engine)
-
-    def tearDown(self):
-        from .models.meta import Base
-
-        testing.tearDown()
-        transaction.abort()
-        Base.metadata.drop_all(self.engine)
-
-
-class TestMyViewSuccessCondition(BaseTest):
-
-    def setUp(self):
-        super(TestMyViewSuccessCondition, self).setUp()
-        self.init_database()
-
-        from .models import MyModel
-
-        model = MyModel(name='one', value=55)
-        self.session.add(model)
-
-    def test_passing_view(self):
-        from .views.default import my_view
-        info = my_view(dummy_request(self.session))
-        self.assertEqual(info['one'].name, 'one')
-        self.assertEqual(info['project'], 'HomeBanking')
-
-
-class TestMyViewFailureCondition(BaseTest):
-
-    def test_failing_view(self):
-        from .views.default import my_view
-        info = my_view(dummy_request(self.session))
-        self.assertEqual(info.status_int, 500)
+        
+        for client, error_msg in test_cases:
+            self.assertEquals(clientValidation(client), error_msg, client)

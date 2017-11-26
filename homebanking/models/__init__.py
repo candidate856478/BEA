@@ -10,6 +10,7 @@ from .mymodel import (
     Account,
     Client,
     AccountClient,
+    clientValidation,
     )
 
 # run configure_mappers after defining all of the models to ensure

@@ -13,6 +13,7 @@ HomeBanking.egg-info/not-zip-safe
 HomeBanking.egg-info/requires.txt
 HomeBanking.egg-info/top_level.txt
 homebanking/__init__.py
+homebanking/common.py
 homebanking/resources.py
 homebanking/routes.py
 homebanking/security.py
@@ -34,5 +35,7 @@ homebanking/templates/layout.jinja2
 homebanking/templates/login.pt
 homebanking/templates/mytemplate.jinja2
 homebanking/views/__init__.py
+homebanking/views/account.py
+homebanking/views/client.py
+homebanking/views/login.py
 homebanking/views/notfound.py
-homebanking/views/view.py

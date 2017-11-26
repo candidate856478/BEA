@@ -1,6 +1,7 @@
 import transaction
 from hashlib import sha256
 from sqlalchemy.exc import DBAPIError
+from pyramid.security import authenticated_userid
 
 from .models import (
     Client
@@ -35,3 +36,21 @@ def groupfinder(username, request):
         return Response("Error executing group finder request", content_type='text/plain', status=500)
     
     return ['editor'] if existing_user else None
+
+def resourceAccessAllowed(userId, request):
+    """ Verify if user logged in is working on his client data.
+    """
+    allowed = False
+    
+    try:
+        login = authenticated_userid(request)
+        same_user = request.dbsession.query(Client.id).\
+                    filter(Client.login == login, Client.id == userId).scalar()
+        
+        if same_user:
+            allowed = True
+    except DBAPIError:
+        return Response("Error executing access check request", content_type='text/plain', status=500)
+    
+    return allowed
+    

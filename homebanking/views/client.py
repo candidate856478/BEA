@@ -7,11 +7,13 @@ from sqlalchemy.exc import DBAPIError
 from hashlib import sha256
 from urllib.request import urlopen
 import xml.etree.ElementTree as ET
+from ..security import resourceAccessAllowed
 from ..models import (
     Client,
     Account,
     AccountType,
     AccountClient,
+    clientValidation,
     )
 from ..common import deleteAccount
 
@@ -23,6 +25,8 @@ from ..common import deleteAccount
     )
 def client_view(request):
     clientId = request.matchdict["id"]
+    if not resourceAccessAllowed(clientId, request):
+        return Response("Error: Access not allowed on this resource.", content_type='text/plain', status=403)
     logout_url = request.route_url('logout')
     update_url = request.route_url('client_action', action='update', id=clientId)
     delete_url = request.route_url('client_action', action='delete', id=clientId)
@@ -77,29 +81,36 @@ def client_add(request):
         first_name = request.params['first_name']
         birth_date = request.params['birth_date']
         address = request.params['address']
-        
-        password=sha256((login + ':' + password).encode("utf-8")).hexdigest(), 
-        
-        #call Google Geocoding to fill lat & lng
-        API_KEY = request.registry.settings['geocoding.API_KEY']
-        url = request.route_url('geocoding_API', _query={'API_KEY':API_KEY, 'address':'\'' + address + '\''})
-        geocodingInfo = urlopen(url).read()
 
-        root = ET.fromstring(geocodingInfo.decode("utf-8"))
-        status = root.find("./status").text
-
-        if status == 'OK':
-            lat = float(root.find("./result/geometry/location/lat").text)
-            lng = float(root.find("./result/geometry/location/lng").text)
-        else:
-            lat = ''
-            lng = ''
-
-        #Validations (TODO in other file)
-        if len(login) == 0:
-            error_msg += 'Login is mandatory.'
+        #Input validation
+        error_msg = clientValidation(Client(
+            login=login,
+            password=password,
+            name=name,
+            first_name=first_name,
+            birth_date=birth_date,
+            address=address,
+            ))
 
         if not error_msg:
+
+            password=sha256((login + ':' + password).encode("utf-8")).hexdigest(), 
+        
+            #call Google Geocoding to fill lat & lng
+            API_KEY = request.registry.settings['geocoding.API_KEY']
+            url = request.route_url('geocoding_API', _query={'API_KEY':API_KEY, 'address':'\'' + address + '\''})
+            geocodingInfo = urlopen(url).read()
+
+            root = ET.fromstring(geocodingInfo.decode("utf-8"))
+            status = root.find("./status").text
+
+            if status == 'OK':
+                lat = float(root.find("./result/geometry/location/lat").text)
+                lng = float(root.find("./result/geometry/location/lng").text)
+            else:
+                lat = ''
+                lng = ''
+
             client = Client(
                 login=login,
                 password=password,
@@ -110,14 +121,14 @@ def client_add(request):
                 lat=lat,
                 lng=lng,
                 )
-            
+
             try:
                 request.dbsession.add(client)
             except DBAPIError:
                 return Response("Error creating client", content_type='text/plain', status=500)
- 
+
             return HTTPFound(location=url_login)
- 
+
     return dict(
         url=url, 
         title=title,
@@ -137,6 +148,8 @@ def client_add(request):
     )
 def client_update(request):
     clientId = request.matchdict["id"]
+    if not resourceAccessAllowed(clientId, request):
+        return Response("Error: Access not allowed on this resource.", content_type='text/plain', status=403)
     title = 'Client update'
     
     login = request.session['client_login']
@@ -158,28 +171,35 @@ def client_update(request):
         birth_date = request.params['birth_date']
         address = request.params['address']
         
-        #call Google Geocoding to fill lat & lng
-        API_KEY = request.registry.settings['geocoding.API_KEY']
-        url = request.route_url('geocoding_API', _query={'API_KEY':API_KEY, 'address':'\'' + address + '\''})
-        geocodingInfo = urlopen(url).read()
+        #Input validation
+        error_msg = clientValidation(Client(
+            login=login,
+            password=password,
+            name=name,
+            first_name=first_name,
+            birth_date=birth_date,
+            address=address,
+            ))
 
-        root = ET.fromstring(geocodingInfo.decode("utf-8"))
-        status = root.find("./status").text
-
-        if status == 'OK':
-            lat = float(root.find("./result/geometry/location/lat").text)
-            lng = float(root.find("./result/geometry/location/lng").text)
-        else:
-            lat = ''
-            lng = ''
-        
-        #Validations (TODO in other file)
-        if len(password) == 0:
-            error_msg += 'Password is mandatory.'
+        if not error_msg:
             
-        password=sha256((login + ':' + password).encode("utf-8")).hexdigest(), 
+            #call Google Geocoding to fill lat & lng
+            API_KEY = request.registry.settings['geocoding.API_KEY']
+            url = request.route_url('geocoding_API', _query={'API_KEY':API_KEY, 'address':'\'' + address + '\''})
+            geocodingInfo = urlopen(url).read()
 
-        if not error_msg:  
+            root = ET.fromstring(geocodingInfo.decode("utf-8"))
+            status = root.find("./status").text
+
+            if status == 'OK':
+                lat = float(root.find("./result/geometry/location/lat").text)
+                lng = float(root.find("./result/geometry/location/lng").text)
+            else:
+                lat = ''
+                lng = ''
+                
+            password=sha256((login + ':' + password).encode("utf-8")).hexdigest(), 
+  
             try:
                 request.dbsession.query(Client).filter(Client.id == clientId).update({
                     'login':login,
@@ -216,6 +236,8 @@ def client_update(request):
     )
 def client_delete(request):
     clientId = request.matchdict["id"]
+    if not resourceAccessAllowed(clientId, request):
+        return Response("Error: Access not allowed on this resource.", content_type='text/plain', status=403)
 
     try:
         accounts = request.dbsession.query(Account).\

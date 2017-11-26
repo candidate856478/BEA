@@ -10,7 +10,7 @@ from sqlalchemy import (
     ForeignKey,
 )
 from sqlalchemy.orm import relationship
-
+from time import strptime
 from .meta import Base
 
 class AccountType(Base):
@@ -37,10 +37,10 @@ class Client(Base):
     password = Column(String(64), nullable=False)
     name = Column(String(60), nullable=False)
     first_name = Column(String(60), nullable=False)
+    birth_date = Column(Date, nullable=False)
     address = Column(String(80), nullable=False)
     lat = Column(Float)
     lng = Column(Float)
-    birth_date = Column(Date, nullable=False)
 
 class AccountClient(Base):
     __tablename__ = 'account_client'
@@ -56,3 +56,29 @@ class AccountClient(Base):
         )
     client = relationship('Client', backref='clients')
     account = relationship('Account', backref='accounts')
+
+def clientValidation(client):
+    """ Client attributes validation
+    """
+    msg = ''
+
+    if len(client.login) == 0:
+        msg = 'Login is mandatory.'
+    elif len(client.password) == 0:
+        msg = 'Password is mandatory.'
+    elif len(client.name) == 0:
+        msg = 'Name is mandatory.'
+    elif len(client.first_name) == 0:
+        msg = 'First name is mandatory.'
+    elif len(client.birth_date) == 0:
+        msg = 'Birth date is mandatory.'
+    elif len(client.address) == 0:
+        msg = 'Address is mandatory.'
+
+    if len(msg) == 0:
+        try:
+            strptime(client.birth_date, "%Y-%m-%d")
+        except ValueError:
+            msg = 'Wrong date format.'
+
+    return msg
